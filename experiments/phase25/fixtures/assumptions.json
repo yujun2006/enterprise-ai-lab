@@ -1,0 +1,22 @@
+{
+  "price": 100.0,
+  "shares": 10.0,
+  "net_debt": 5.0,
+  "wacc": 0.09,
+  "terminal_g": 0.03,
+  "range_low": 80.0,
+  "range_high": 110.0,
+  "scenarios": [
+    { "name": "bear", "prob": 0.3, "evidence_strength": "中", "revenue": [100, 105], "fcf_margin": [0.10, 0.11] },
+    { "name": "base", "prob": 0.5, "evidence_strength": "中", "revenue": [100, 115], "fcf_margin": [0.12, 0.14] },
+    { "name": "bull", "prob": 0.2, "evidence_strength": "弱", "revenue": [100, 130], "fcf_margin": [0.15, 0.18] }
+  ],
+  "epv": {
+    "earnings_basis": "NOPAT",
+    "normalized_earnings": 12.0,
+    "coc": 0.09,
+    "shares": 10.0,
+    "net_debt": 5.0,
+    "growth": { "g": 0.03, "roiic": 0.18 }
+  }
+}
