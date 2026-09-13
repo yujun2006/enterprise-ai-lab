@@ -3,13 +3,40 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "engines": {
     "node": ">=22.19.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "serve": "tsx src/server.ts",
+    "pack:local": "npm run build && npm pack",
     "smoke": "tsx scripts/smoke.ts",
-    "acceptance:phase20": "tsx scripts/phase20-acceptance.ts"
+    "acceptance:phase20": "tsx scripts/phase20-acceptance.ts",
+    "acceptance:phase27b": "tsx scripts/phase27b-acceptance.ts",
+    "acceptance:phase27c": "tsx scripts/phase27c-acceptance.ts",
+    "acceptance:phase28a": "tsx scripts/phase28a-acceptance.ts",
+    "acceptance:phase29b": "tsx scripts/phase29b-acceptance.ts",
+    "acceptance:phase29c": "tsx scripts/phase29c-acceptance.ts",
+    "acceptance:phase29d": "tsx scripts/phase29d-acceptance.ts",
+    "acceptance:phase30": "tsx scripts/phase30-acceptance.ts",
+    "acceptance:phase33b": "tsx scripts/phase33b-acceptance.ts",
+    "acceptance:phase31": "tsx scripts/phase31-acceptance.ts",
+    "acceptance:phase34b": "tsx scripts/phase34b-acceptance.ts",
+    "acceptance:phase37b": "tsx scripts/phase37b-acceptance.ts"
   },
   "dependencies": {
     "@earendil-works/pi-agent-core": "^0.85.1",

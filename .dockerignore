@@ -1,0 +1,11 @@
+node_modules
+src
+scripts
+docs
+experiments
+.env
+.env.*
+.git
+.gitignore
+*.tgz
+tsconfig*.json

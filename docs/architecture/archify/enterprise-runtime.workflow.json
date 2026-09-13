@@ -1,0 +1,62 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Enterprise AI Runtime — Run & Recovery Workflow",
+    "locale": "en",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "happy", "label": "Run to result", "focus": ["caller", "run", "btc", "decide", "cpt", "tool", "external", "aftertc", "final"], "note": "Successful run from caller to final reply." },
+      { "id": "safety", "label": "Policy & block", "focus": ["btc", "decide", "blocked", "cpt"], "note": "Where work stops or is blocked by policy." },
+      { "id": "recovery", "label": "Crash recovery", "focus": ["caller", "recover", "run", "cpt", "external"], "note": "Restart reconstructs the Session and reconciles external truth." }
+    ]
+  },
+  "lanes": [
+    { "id": "caller", "label": "Caller / Client" },
+    { "id": "runtime", "label": "EnterpriseAiRuntime" },
+    { "id": "policy", "label": "Policy & Recovery", "variant": "exception" },
+    { "id": "tools", "label": "Tool & External" }
+  ],
+  "phases": [
+    { "id": "intake", "label": "Intake", "fromCol": 0, "toCol": 1 },
+    { "id": "gate", "label": "Policy + checkpoint", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "execute", "label": "Execute + report", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "groups": [
+    { "id": "agent_loop", "label": "Run envelope", "lane": "runtime", "fromCol": 1, "toCol": 3, "variant": "emphasis" },
+    { "id": "exception_path", "label": "Stop / block", "lane": "policy", "fromCol": 1, "toCol": 2, "variant": "security" },
+    { "id": "tool_work", "label": "Tool work", "lane": "tools", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": ["caller", "run", "btc", "decide", "cpt", "tool", "external", "aftertc", "final"],
+  "nodes": [
+    { "id": "caller", "lane": "caller", "col": 0, "type": "external", "label": "Caller", "sublabel": "HTTP / script", "width": 140 },
+    { "id": "recover", "lane": "policy", "col": 0, "type": "security", "label": "recoverIfUnfinished", "sublabel": "reconcile", "width": 140 },
+    { "id": "run", "lane": "runtime", "col": 1, "type": "backend", "label": "run()", "sublabel": "new runId", "width": 140 },
+    { "id": "btc", "lane": "runtime", "col": 2, "type": "backend", "label": "beforeToolCall", "sublabel": "policy + checkpoint", "width": 140 },
+    { "id": "decide", "lane": "policy", "col": 2, "type": "security", "label": "Policy Decision", "sublabel": "allow/deny/ask", "width": 140 },
+    { "id": "blocked", "lane": "policy", "col": 1, "type": "security", "label": "Blocked", "sublabel": "deny / reject", "width": 140 },
+    { "id": "cpt", "lane": "runtime", "col": 3, "type": "backend", "label": "Checkpoint", "sublabel": "before_tool", "width": 140 },
+    { "id": "tool", "lane": "tools", "col": 4, "type": "messagebus", "label": "Tool Execute", "sublabel": "via boundary", "width": 140 },
+    { "id": "external", "lane": "tools", "col": 5, "type": "cloud", "label": "External Resource", "sublabel": "idempotent", "width": 140 },
+    { "id": "aftertc", "lane": "runtime", "col": 5, "type": "backend", "label": "afterToolCall", "sublabel": "recovered", "width": 140 },
+    { "id": "final", "lane": "caller", "col": 5, "type": "backend", "label": "Final Reply", "sublabel": "answer", "width": 140 }
+  ],
+  "edges": [
+    { "id": "req", "from": "caller", "to": "run", "label": "request" },
+    { "id": "restart", "from": "caller", "to": "recover", "label": "restart", "variant": "dashed" },
+    { "id": "resume", "from": "recover", "to": "run", "label": "resume new run", "variant": "dashed" },
+    { "id": "run-btc", "from": "run", "to": "btc" },
+    { "id": "btc-decide", "from": "btc", "to": "decide", "label": "evaluate", "variant": "security" },
+    { "id": "decide-cpt", "from": "decide", "to": "cpt", "label": "allow", "variant": "emphasis" },
+    { "id": "decide-blocked", "from": "decide", "to": "blocked", "label": "deny", "variant": "security", "role": "error" },
+    { "id": "cpt-tool", "from": "cpt", "to": "tool" },
+    { "id": "tool-ext", "from": "tool", "to": "external" },
+    { "id": "ext-aftertc", "from": "external", "to": "aftertc", "variant": "emphasis", "role": "return", "fromSide": "right", "toSide": "right", "route": "outside-right", "width": 1.2 },
+    { "id": "aftertc-final", "from": "aftertc", "to": "final", "variant": "emphasis", "role": "return" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Run envelope", "items": ["run() issues a new runId; beforeToolCall evaluates Policy then writes a checkpoint", "After a crash, recoverIfUnfinished reconciles external truth and resumes via a NEW run"] },
+    { "dot": "rose", "title": "Policy & human gate", "items": ["ASK persists a durable pending_approval + approvalId before awaiting a human", "Deny / Reject blocks the tool; the Run never auto-executes a gated operation"] }
+  ]
+}

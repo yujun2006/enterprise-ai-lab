@@ -12,4 +12,6 @@ export interface RecoveryStore {
   load(sessionId: string): Promise<DurableRecoveryRecord | undefined>;
   saveMessages(sessionId: string, messages: AgentMessage[]): Promise<void>;
   loadMessages(sessionId: string): Promise<AgentMessage[] | undefined>;
+  /** Phase 34-B — Discovery：返回 store 中所有 Recovery Record（调用方据此发现 unfinished Run）。 */
+  list(): Promise<DurableRecoveryRecord[]>;
 }

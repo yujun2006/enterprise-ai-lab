@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Durable Recovery / Approval Operation Lifecycle",
+    "locale": "en",
+    "viewBox": [1030, 630],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "main-lifecycle", "label": "Main lifecycle", "focus": ["created", "running", "recovered", "completed"], "note": "One durable operation from run start to completed tool." },
+      { "id": "human-waits", "label": "Human gate", "focus": ["running", "pending", "rejected"], "note": "ASK pauses the operation; allow resumes Running, deny is terminal." },
+      { "id": "recovery", "label": "Crash recovery", "focus": ["running", "interrupted"], "note": "Crash loops back via RETRY; UNKNOWN reconcile Escalates (terminal, noted in card)." }
+    ]
+  },
+  "lanes": [
+    { "id": "main", "label": "Lifecycle phases" },
+    { "id": "waiting", "label": "Interruptions" },
+    { "id": "exceptions", "label": "Recovery loop" },
+    { "id": "terminal", "label": "Terminal exits" }
+  ],
+  "states": [
+    { "id": "created", "type": "start", "label": "Created", "sublabel": "run() begins", "lane": "main", "col": 0, "step": "01", "tag": "entry" },
+    { "id": "running", "type": "active", "label": "Running", "sublabel": "before_tool checkpoint", "lane": "main", "col": 1, "step": "02", "tag": "work" },
+    { "id": "recovered", "type": "success", "label": "Recovered", "sublabel": "tool done / SKIP", "lane": "main", "col": 2, "step": "03", "tag": "done" },
+    { "id": "completed", "type": "success", "label": "Completed Run", "sublabel": "final answer", "lane": "main", "col": 4, "step": "05", "tag": "done" },
+    { "id": "pending", "type": "waiting", "label": "Pending Approval", "sublabel": "ASK written", "lane": "waiting", "col": 1, "tag": "pause" },
+    { "id": "interrupted", "type": "failure", "label": "Interrupted", "sublabel": "crash pre-commit", "lane": "exceptions", "col": 0, "yOffset": 78, "tag": "retryable" },
+    { "id": "rejected", "type": "failure", "label": "Rejected", "sublabel": "human denied", "lane": "terminal", "col": 1, "tag": "terminal" }
+  ],
+  "transitions": [
+    { "id": "ask", "from": "running", "to": "pending", "variant": "security", "label": "ASK", "fromSide": "bottom", "toSide": "top", "labelAt": [400, 210] },
+    { "id": "resume", "from": "pending", "to": "running", "variant": "emphasis", "label": "allow", "fromSide": "top", "toSide": "bottom", "labelAt": [400, 256] },
+    { "id": "deny", "from": "pending", "to": "rejected", "variant": "security", "label": "deny", "fromSide": "bottom", "toSide": "top", "labelAt": [556, 350] },
+    { "id": "crash", "from": "running", "to": "interrupted", "variant": "security", "label": "crash", "fromSide": "bottom", "toSide": "top", "labelAt": [160, 292] },
+    { "id": "retry", "from": "interrupted", "to": "running", "variant": "emphasis", "label": "retry", "fromSide": "top", "toSide": "bottom", "labelAt": [160, 250] }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Sequential durable operation", "items": ["One DurableRecoveryRecord per session carries running/pending/approved/rejected", "Recovery reconstructs the Session, never the old Run"] },
+    { "dot": "rose", "title": "Terminal vs recoverable", "items": ["Interrupted loops back via RETRY; Rejected is terminal", "UNKNOWN reconcile Escalates (terminal, no return path) — Human Approval is a waiting state, not a subsystem"] }
+  ]
+}

@@ -25,6 +25,8 @@ export interface ScriptedToolCall {
 export class ScriptedModel {
   private queue: ScriptedToolCall[] = [];
   private finals: string[] = [];
+  /** Phase 34-B — 测试用：在发出任何事件前（Tool 尚未执行）模拟进程崩溃。 */
+  crashBeforeTool = false;
 
   enqueueTool(call: ScriptedToolCall): void {
     this.queue.push(call);
@@ -80,11 +82,13 @@ export class ScriptedModel {
       ];
     }
     let i = 0;
+    const self = this;
     // AssistantMessageEventStream = async-iterable + result()/current(). Pi calls response.result() for the final message.
     const stream: Record<string, unknown> = {
       [Symbol.asyncIterator]() {
         return {
           async next() {
+            if (self.crashBeforeTool && i === 0) process.exit(137);
             if (i < events.length) return { value: events[i++], done: false };
             return { value: undefined, done: true };
           },
@@ -162,7 +166,7 @@ export function reconcileFileExternal(resource: ExternalResource): ReconcileFn {
   return (key) => resource.status(key);
 }
 
-export type CrashMode = "none" | "commit-exit" | "precommit-exit";
+export type CrashMode = "none" | "commit-exit" | "precommit-exit" | "start-exit";
 
 /**
  * 最小 Idempotent State-changing Tool。

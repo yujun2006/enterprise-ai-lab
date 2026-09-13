@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Enterprise AI Runtime — Kernel Architecture",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [1180, 860],
+    "views": [
+      { "id": "kernel", "label": "Runtime Kernel", "focus": ["runtime", "policy", "agent", "model"], "note": "Core Runtime envelope and its owned control-plane components." },
+      { "id": "durable", "label": "Durable control plane", "focus": ["recovery", "audit"], "note": "Persistence that survives a process restart." },
+      { "id": "boundary", "label": "Execution boundary", "focus": ["agent", "boundary", "external"], "note": "Agent loop, isolated tool execution, and external truth." }
+    ]
+  },
+  "components": [
+    { "id": "runtime", "type": "backend", "label": "EnterpriseAiRuntime", "sublabel": "src/runtime.ts", "pos": [380, 420], "size": [170, 74] },
+    { "id": "policy", "type": "security", "label": "Policy Adapter", "sublabel": "evaluatePolicy", "pos": [640, 420], "size": [170, 70] },
+    { "id": "agent", "type": "external", "label": "pi-agent-core Agent", "sublabel": "loop + tool exec", "pos": [900, 420], "size": [170, 70] },
+    { "id": "model", "type": "backend", "label": "Model / StreamFn", "sublabel": "Ollama | Scripted", "pos": [300, 180], "size": [160, 60] },
+    { "id": "boundary", "type": "backend", "label": "ExecutionBoundary", "sublabel": "child process", "pos": [640, 180], "size": [170, 60] },
+    { "id": "external", "type": "external", "label": "External Resource", "sublabel": "idempotent truth", "pos": [900, 180], "size": [170, 60] },
+    { "id": "recovery", "type": "database", "label": "RecoveryStore", "sublabel": "FileRecoveryStore", "pos": [200, 680], "size": [160, 60] },
+    { "id": "audit", "type": "database", "label": "AuditSink", "sublabel": "FileAuditSink", "pos": [380, 680], "size": [160, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Enterprise AI Runtime Kernel", "wraps": ["runtime", "policy", "agent", "model", "boundary", "external"] },
+    { "kind": "region", "label": "Durable Control Plane", "wraps": ["recovery", "audit"] }
+  ],
+  "connections": [
+    { "id": "run-pol", "from": "runtime", "to": "policy", "label": "beforeToolCall", "variant": "security", "fromSide": "right", "toSide": "left", "labelAt": [574, 510] },
+    { "id": "pol-agent", "from": "policy", "to": "agent", "label": "policy gate", "fromSide": "right", "toSide": "left" },
+    { "id": "run-model", "from": "runtime", "to": "model", "label": "model", "fromSide": "top", "toSide": "bottom" },
+    { "id": "run-audit", "from": "runtime", "to": "audit", "label": "checkpoint", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelAt": [500, 545] },
+    { "id": "run-rec", "from": "runtime", "to": "recovery", "label": "transcript", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelAt": [390, 620] },
+    { "id": "agent-ext", "from": "agent", "to": "external", "label": "tool.execute", "fromSide": "top", "toSide": "bottom" },
+    { "id": "bound-ext", "from": "boundary", "to": "external", "label": "side-effect", "fromSide": "right", "toSide": "left" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Runtime Kernel", "items": ["EnterpriseAiRuntime is a thin facade owning Run lifecycle, Recovery and Approval control points", "No *Manager/*Engine: Policy / Recovery / Audit are boundaries, not subsystems"] },
+    { "dot": "emerald", "title": "Durable State", "items": ["FileRecoveryStore persists one DurableRecoveryRecord + transcript per sessionId", "FileAuditSink appends governance facts only; never read back as state"] },
+    { "dot": "rose", "title": "Boundaries", "items": ["Policy ASK + DurableRecoveryRecord + approvalId = Human Approval (no new subsystem)", "ExecutionBoundary isolates tool side-effects in a child process"] }
+  ]
+}

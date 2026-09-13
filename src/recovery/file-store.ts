@@ -57,4 +57,19 @@ export class FileRecoveryStore implements RecoveryStore {
       return undefined;
     }
   }
+
+  /** Phase 34-B — Discovery：扫描目录下所有 recovery-*.json，返回全部 record（崩溃后重启发现 unfinished Run）。 */
+  async list(): Promise<DurableRecoveryRecord[]> {
+    const files = await fs.readdir(this.dir).catch(() => [] as string[]);
+    const out: DurableRecoveryRecord[] = [];
+    for (const f of files) {
+      if (!f.startsWith("recovery-") || !f.endsWith(".json")) continue;
+      try {
+        out.push(JSON.parse(await fs.readFile(path.join(this.dir, f), "utf8")) as DurableRecoveryRecord);
+      } catch {
+        /* 损坏文件跳过 */
+      }
+    }
+    return out;
+  }
 }

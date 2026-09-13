@@ -44,6 +44,14 @@ export interface ExecutionTrace {
   llmCalls: LlmCallTrace[];
   /** 最终 Assistant 回答文本（从 message_end 事件提取）。 */
   finalAnswer: string;
+  /**
+   * 最终 Assistant 消息的 stopReason（从 message_end 事件提取）。
+   * 取值来自 pi-agent-core： "completed" | "error" | "aborted"（toolUse 非终止态）。
+   * 用于推断 RunResult.status；UNKNOWN 不等于 FAILED（Phase 8）。
+   */
+  stopReason?: string;
+  /** 当 stopReason === "error" 时，由 Pi 填充的错误信息（不泄漏原始异常/堆栈）。 */
+  errorMessage?: string;
 }
 
 /**

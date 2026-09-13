@@ -309,6 +309,9 @@ async function main(): Promise<void> {
       async loadMessages(): Promise<undefined> {
         return undefined;
       }
+      async list(): Promise<never[]> {
+        return [];
+      }
     }
     const store = new FailingStore();
     const counter = { n: 0 };

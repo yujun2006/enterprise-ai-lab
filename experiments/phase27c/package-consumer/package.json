@@ -1,0 +1,10 @@
+{
+  "name": "phase27c-package-consumer",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Minimal consumer that installs the enterprise-ai-runtime tarball and uses its Public API.",
+  "dependencies": {
+    "enterprise-ai-runtime": "file:../../../enterprise-ai-runtime-0.1.0.tgz"
+  }
+}
